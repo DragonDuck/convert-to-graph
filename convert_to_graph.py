@@ -18,6 +18,14 @@ class Node(object):
     def __repr__(self):
         return "NODE({})".format(self._name)
 
+    def _update_id(self):
+        cur_node = self
+        self._id = re.sub(pattern="[^A-Za-z0-9]", repl="", string=self._name).lower()
+        while cur_node.get_parent() is not None:
+            cur_node = cur_node.get_parent()
+            cur_node_id = re.sub(pattern="[^A-Za-z0-9]", repl="", string=cur_node.get_name()).lower()
+            self._id = cur_node_id + "__" + self._id
+
     def get_name(self):
         return self._name
 
@@ -29,13 +37,14 @@ class Node(object):
 
     def set_parent(self, new_parent):
         self._parent = new_parent
+        self._update_id()
 
     def get_children(self):
         return self._children
 
     def add_child(self, new_child):
         self._children.append(new_child)
-        new_child._parent = self
+        new_child.set_parent(self)
 
 
 def build_tree(filename):
