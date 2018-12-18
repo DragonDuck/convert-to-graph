@@ -6,9 +6,10 @@ class Node(object):
     """
     A node of a hierarchical tree. Has a single parent and 0+ children
     """
-    def __init__(self, name, parent=None):
+    def __init__(self, name, depth, parent=None):
         self._name = name
         self._id = re.sub(pattern="[^A-Za-z0-9]", repl="", string=name).lower()
+        self._depth = depth
         self._parent = parent
         self._children = []
 
@@ -32,6 +33,9 @@ class Node(object):
     def get_id(self):
         return self._id
 
+    def get_depth(self):
+        return self._depth
+
     def get_parent(self):
         return self._parent
 
@@ -54,13 +58,13 @@ def build_tree(filename):
     first_line = file.readline().rstrip()
     base_leading_spaces = len(first_line) - len(first_line.lstrip(" "))
     cur_depth = base_leading_spaces
-    cur_node = Node(name=first_line.strip())
+    cur_node = Node(name=first_line.strip(), depth=base_leading_spaces)
     tree = cur_node
 
     for line in file:
         line = line.rstrip()
         leading_spaces = len(line) - len(line.lstrip(" "))
-        new_node = Node(name=line.strip())
+        new_node = Node(name=line.strip(), depth=leading_spaces)
 
         # Add child
         if leading_spaces > cur_depth:
@@ -95,7 +99,7 @@ def write_neo4j_instructions(tree):
     :param tree:
     :return:
     """
-    print("CREATE ({}:Node {{name: '{}'}})".format(tree.get_id(), tree.get_name()))
+    print("CREATE ({}:Level{} {{name: '{}'}})".format(tree.get_id(), tree.get_depth(), tree.get_name()))
     children = tree.get_children()
     for child in children:
         write_neo4j_instructions(child)
